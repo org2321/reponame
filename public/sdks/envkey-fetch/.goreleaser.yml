@@ -1,0 +1,13 @@
+builds:
+  - binary: envkey-fetch
+    ldflags:
+      - '-s -w'
+      - '-extldflags "-static" -X github.com/org2321/reponame/public/sdks/envkey-fetch/version.Version={{.Env.ENVKEYFETCH_VERSION}}'
+    env:
+      - CGO_ENABLED=0
+      - GOROOT_FINAL=/usr/go
+    goos:
+      - darwin
+      - linux
+      - windows
+      - freebsd

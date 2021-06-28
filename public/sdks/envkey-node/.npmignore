@@ -1,0 +1,14 @@
+# By including this file, npm will use it instead of .gitignore.
+# ext/* is NOT included here because we need envkey-fetch published
+
+node_modules/
+*.log
+
+# envkey tests
+__tests__
+
+# normally ignored automatically
+package-lock.json
+
+# envkey ci publish scripts
+ci-*.json

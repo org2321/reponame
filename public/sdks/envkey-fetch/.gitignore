@@ -1,0 +1,11 @@
+.DS_Store
+
+# Test binary, build with `go test -c`
+*.test
+
+envkey-fetch
+go-envkeyfetch
+.ghtoken
+dist/
+*.code-workspace
+dist

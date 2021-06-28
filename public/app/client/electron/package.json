@@ -1,0 +1,26 @@
+{
+  "_name": "---- Note!! The name below is public to end users as the OS identifier. ----",
+  "name": "envkey",
+  "version": "0.0.96",
+  "_description": "---- NOTE!! The description below is public to end users. ----",
+  "description": "EnvKey Desktop",
+  "author": "Envkey Inc <support@envkey.com>",
+  "_repository": "---- NOTE!! For auto-updates.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/org2321/dmir.git"
+  },
+  "license": "MIT",
+  "_main": "---- Note!! production build entrypoint, relative to the root of the app. ----",
+  "main": "bundle.js",
+  "scripts": {
+    "build": "rm -rf dist && ../../../../node_modules/.bin/webpack && ../../../../node_modules/.bin/webpack --config ./webpack.preload.ts && cp ../../core/build/worker.js dist/",
+    "build:start": "npm run build && (cd dist && ../../../../../node_modules/.bin/electron bundle.js)",
+    "start": "(cd dist && ../../../../../node_modules/.bin/electron bundle.js)"
+  },
+  "devDependencies": {},
+  "_dependencies": "---- Note!! keytar is required in this package.json for electron-rebuild to work propertly! ----",
+  "dependencies": {
+    "keytar": "^7.2.0"
+  }
+}

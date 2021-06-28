@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "include": ["src/commands", "src/lib/cmd.ts", "src/lib/types.ts"],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "lib": ["es6", "es2016.array.include", "dom"],
+    "noEmit": false,
+    "paths": {
+      "@core/*": ["../../core/src/*"],
+      "@core_proc/*": ["../core_process/src/*"],
+      "@infra/*": ["../../api/infra/src/*"],
+      "@vendor/*": ["../../vendor/*"]
+    }
+  }
+}

@@ -1,0 +1,1 @@
+{"TEST":"it","TEST_2":"works!","TEST_INJECTION":"'$(uname)","TEST_SINGLE_QUOTES":"this' is ok","TEST_SPACES":"it does work!","TEST_STRANGE_CHARS":"with quotes ` ' \\\" bäh"}
