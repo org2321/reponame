@@ -12,10 +12,19 @@ import { log, logWithElapsed } from "@core/lib/utils/logger";
 
 let maxPacketSize = 4000000; // just a default, will be ovewritten by `max_allowed_packet` setting from db on init
 
-const dbCredentials = JSON.parse(env.DATABASE_CREDENTIALS_JSON) as {
+let dbCredentials: {
   user: string;
   password: string;
 };
+try {
+  dbCredentials = JSON.parse(env.DATABASE_CREDENTIALS_JSON) as {
+    user: string;
+    password: string;
+  };
+} catch (err) {
+  log("Failed reading DATABASE_CREDENTIALS_JSON from environment!", { err });
+  process.exit(1);
+}
 
 export const poolConfig = {
     ...dbCredentials,
@@ -309,7 +318,8 @@ export const poolConfig = {
     key: Api.Db.DbKey,
     obj: T
   ): Api.Db.SqlStatement => ({
-    qs: "UPDATE objects SET body = ?, data = ?, updatedAt = ?, deletedAt = ?, orderIndex = ?, secondaryIndex = ?, excludeFromDeletedGraph = ? WHERE pkey = ? AND skey = ?;",
+    qs:
+      "UPDATE objects SET body = ?, data = ?, updatedAt = ?, deletedAt = ?, orderIndex = ?, secondaryIndex = ?, excludeFromDeletedGraph = ? WHERE pkey = ? AND skey = ?;",
     qargs: [
       JSON.stringify(
         R.omit(
