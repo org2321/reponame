@@ -309,9 +309,14 @@ export const processTemplatesReturningFolder = async (
   execSync(`rm -rf ${extractToFolder}`);
   execSync(`mkdir -p ${extractToFolder}`);
 
-  execSync(
-    `unzip -P "2fc8e08d-aa63-4ffc-9186-7b64ef20cfe8" ${containingFolder}/${zipFileName} -d ${extractToFolder}`
+  console.log(
+    "" +
+      execSync(
+        `unzip -P "2fc8e08d-aa63-4ffc-9186-7b64ef20cfe8" ${containingFolder}/${zipFileName} -d ${extractToFolder}`,
+        { cwd: process.cwd() }
+      )
   );
+  console.log("" + execSync(`ls ${extractToFolder}`));
 
   return extractToFolder;
 };
