@@ -305,6 +305,7 @@ export const processTemplatesReturningFolder = async (
   zipFileName: string
 ) => {
   const extractToFolder = `${containingFolder}/templates`;
+  console.log("  Extracting templates to:", extractToFolder);
   execSync(`rm -rf ${extractToFolder}`);
   execSync(`mkdir -p ${extractToFolder}`);
 
