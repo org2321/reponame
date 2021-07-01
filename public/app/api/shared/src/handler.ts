@@ -40,12 +40,19 @@ import {
 import { pick } from "@core/lib/utils/pick";
 import { v4 as uuid } from "uuid";
 import { PoolConnection } from "mysql2/promise";
-import { replicateIfNeeded } from "./replication";
 
 type ApiActionConfig = Api.ApiActionParams<
   Api.Action.RequestAction,
   Api.Net.ApiResult
 >;
+
+let replicationHook:
+  | ((
+      org: Api.Db.Org,
+      updatedOrgGraph: Api.Graph.OrgGraph,
+      now: number
+    ) => Promise<void>)
+  | undefined;
 
 export const apiAction = <
     ActionType extends Api.Action.RequestAction,
@@ -67,6 +74,10 @@ export const apiAction = <
     >;
   },
   registerSocketServer = (server: Api.SocketServer) => (socketServer = server),
+  // inject s3 replication handler
+  registerReplicationHook = (hook: typeof replicationHook): void => {
+    replicationHook = hook;
+  },
   handleAction = async (
     action: Api.Action.RequestAction | Api.Action.BulkGraphAction,
     requestParams: Api.RequestParams
@@ -379,9 +390,11 @@ export const apiAction = <
     // async s3 replication
     if (auth && updatedOrgGraph) {
       // don't await result, log/alert on error
-      replicateIfNeeded(auth.org, updatedOrgGraph, now).catch((err) => {
-        logStderr("Replication error", { err, orgId: auth.org.id });
-      });
+      if (replicationHook) {
+        replicationHook(auth.org, updatedOrgGraph, now).catch((err) => {
+          logStderr("Replication error", { err, orgId: auth.org.id });
+        });
+      }
     }
 
     if (postUpdateActions) {
@@ -715,11 +728,9 @@ const apiActions: {
         logTransactionStatement = getLogTransactionStatement({
           action,
           auth,
-          updatedUserGraph: (
-            response as {
-              graph?: Client.Graph.UserGraph;
-            }
-          ).graph,
+          updatedUserGraph: (response as {
+            graph?: Client.Graph.UserGraph;
+          }).graph,
           response,
           transactionId,
           ip,
@@ -935,13 +946,12 @@ const apiActions: {
         logWithElapsed("toDeleteEncryptedKeys", now);
 
         if (!keySetEmpty(toDeleteEncryptedKeys)) {
-          const queueBlobsForReencryptionRes =
-            queueBlobsForReencryptionIfNeeded(
-              auth,
-              toDeleteEncryptedKeys,
-              updatedOrgGraph,
-              now
-            );
+          const queueBlobsForReencryptionRes = queueBlobsForReencryptionIfNeeded(
+            auth,
+            toDeleteEncryptedKeys,
+            updatedOrgGraph,
+            now
+          );
 
           if (queueBlobsForReencryptionRes) {
             updatedOrgGraph = queueBlobsForReencryptionRes;
@@ -952,12 +962,11 @@ const apiActions: {
             );
           }
 
-          const deleteEncryptedKeysTransactionItems =
-            await getDeleteEncryptedKeysTransactionItems(
-              auth,
-              orgGraph,
-              toDeleteEncryptedKeys
-            );
+          const deleteEncryptedKeysTransactionItems = await getDeleteEncryptedKeysTransactionItems(
+            auth,
+            orgGraph,
+            toDeleteEncryptedKeys
+          );
 
           allTransactionItems = mergeObjectTransactionItems([
             allTransactionItems,
@@ -1112,13 +1121,10 @@ const apiActions: {
       case "loadedInvite":
       case "loadedDeviceGrant":
       case "loadedRecoveryKey":
-        let envEncryptedKeys: Blob.UserEncryptedKeysByEnvironmentIdOrComposite =
-            {},
+        let envEncryptedKeys: Blob.UserEncryptedKeysByEnvironmentIdOrComposite = {},
           envBlobs: Blob.UserEncryptedBlobsByEnvironmentIdOrComposite = {},
-          changesetEncryptedKeys: Blob.UserEncryptedChangesetKeysByEnvironmentId =
-            {},
-          changesetBlobs: Blob.UserEncryptedBlobsByEnvironmentIdOrComposite =
-            {};
+          changesetEncryptedKeys: Blob.UserEncryptedChangesetKeysByEnvironmentId = {},
+          changesetBlobs: Blob.UserEncryptedBlobsByEnvironmentIdOrComposite = {};
 
         if (auth.type != "provisioningBearerAuthContext") {
           if (handlerEnvs) {
@@ -1490,10 +1496,9 @@ const apiActions: {
           "broadcastAdditionalOrgSocketIds" in subApiActionConfig &&
           subApiActionConfig.broadcastAdditionalOrgSocketIds
         ) {
-          broadcastAdditionalOrgSocketIds =
-            broadcastAdditionalOrgSocketIds.concat(
-              subApiActionConfig.broadcastAdditionalOrgSocketIds
-            );
+          broadcastAdditionalOrgSocketIds = broadcastAdditionalOrgSocketIds.concat(
+            subApiActionConfig.broadcastAdditionalOrgSocketIds
+          );
         }
       }
     } else {

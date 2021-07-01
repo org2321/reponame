@@ -7,10 +7,9 @@ import {
 } from "../../lib/auth";
 import { BaseArgs } from "../../types";
 import chalk from "chalk";
-import {Argv} from "yargs";
-import {autoModeOut} from "../../lib/console_io";
+import { Argv } from "yargs";
+import { autoModeOut } from "../../lib/console_io";
 import * as R from "ramda";
-import {Client} from "@core/types";
 
 export const command = ["list", "ls"];
 export const desc = "List the EnvKey accounts stored on this device.";

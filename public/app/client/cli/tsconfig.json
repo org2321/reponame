@@ -1,6 +1,7 @@
 {
   "extends": "../../tsconfig.json",
-  "include": ["src/commands", "src/lib/cmd.ts", "src/lib/types.ts"],
+  "include": ["src"],
+  "exclude": ["node_modules", "build"],
   "compilerOptions": {
     "baseUrl": ".",
     "lib": ["es6", "es2016.array.include", "dom"],

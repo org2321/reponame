@@ -92,6 +92,7 @@ addCommand((yargs: Argv<BaseArgs>) =>
       let email: string;
       let orgName: string;
       let res: Client.DispatchResult;
+      let overrideHostType: "self-hosted" | "cloud" | undefined;
 
       if (
         [CHOICE_CLOUD, CHOICE_LOCAL_SELF_HOSTED, CHOICE_DEV_OVERRIDE].includes(
@@ -108,9 +109,18 @@ addCommand((yargs: Argv<BaseArgs>) =>
               type: "input",
               name: "override",
               required: true,
-              message: "Enter override, dev:",
+              message: "Enter override hostUrl, dev:",
             })
           ).override;
+          overrideHostType = (
+            await prompt<{ hostType: "self-hosted" | "cloud" }>({
+              type: "select",
+              required: true,
+              name: "hostType",
+              choices: ["self-hosted", "cloud"],
+              message: "Ender hostType, dev",
+            })
+          ).hostType;
         }
 
         ({ email } = await prompt<{ email: string }>({
@@ -186,17 +196,19 @@ addCommand((yargs: Argv<BaseArgs>) =>
         const { firstName, lastName, deviceName } = basicOpts;
 
         spinnerWithText(
-          "Creating organization..." + maybeHostUrlOverride
-            ? " " + maybeHostUrlOverride
-            : ""
+          "Creating organization..." +
+            (maybeHostUrlOverride ? " " + maybeHostUrlOverride : "")
         );
 
-        if ([CHOICE_CLOUD, CHOICE_DEV_OVERRIDE].includes(hostChoice)) {
+        if (
+          hostChoice === CHOICE_CLOUD ||
+          (hostChoice === CHOICE_DEV_OVERRIDE && overrideHostType === "cloud")
+        ) {
           res = await dispatch(
             {
               type: Client.ActionType.REGISTER,
               payload: {
-                hostType: CHOICE_CLOUD,
+                hostType: "cloud",
                 org: {
                   name: orgName,
                   settings: defaultOrgSettings,

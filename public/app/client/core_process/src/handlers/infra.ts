@@ -147,7 +147,10 @@ clientAction<
     const fromInfraVersion = payload.lowestCurrentInfraVersion;
 
     try {
-      // TODO: there is not a way to test automatic upgrades for a self-hosted instance. We could use a local core_process with env vars ENVKEY_RELEASES_BUCKET and ENVKEY_RELEASES_S3_CREDS_JSON perhaps, and pass the creds below
+      // Note that this will only work for public release or public release candidates. Testing
+      // private or pre-releases will need to be done using private releaser's dev-api-api,
+      // or by some other method (future - like setting a different public bucket at
+      // ENVKEY_RELEASES_BUCKET with pre-releases)
       [apiVersionsAvailable, infraVersionsAvailable] = await Promise.all([
         listVersionsGT({
           tagPrefix: "api",

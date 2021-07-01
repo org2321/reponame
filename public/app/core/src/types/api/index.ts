@@ -22,8 +22,6 @@ namespace Api {
     NODE_ENV: "production" | "development";
     SERVER_MODE: "api_only" | "fetch_only" | "combined";
 
-    FAILOVER_SIGNING_PUBKEY: string;
-
     VERIFIED_SENDER_EMAIL: string;
 
     DISABLE_DB_MIGRATIONS?: string;
@@ -31,6 +29,7 @@ namespace Api {
     DATABASE_HOST: string;
     DATABASE_PORT?: string;
     DATABASE_NAME: string;
+    // '{"user": "root", "password": ""}'
     DATABASE_CREDENTIALS_JSON: string;
 
     SOCKET_CLUSTER_AUTH?: string;
@@ -41,10 +40,13 @@ namespace Api {
     INFRA_VERSION_NUMBER: string;
     DEPLOYMENT_TAG: string;
 
-    FAILOVER_BUCKET: string;
-    LOGS_BUCKET: string;
+    FAILOVER_SIGNING_PUBKEY?: string;
+    FAILOVER_BUCKET?: string;
+    LOGS_BUCKET?: string;
     FAILOVER_LOGS_INTERVAL?: string;
-    IS_CLOUD_ENVKEY?: string;
+
+    IS_CLOUD_ENVKEY?: boolean;
+    IS_SELF_HOSTED_ENVKEY?: boolean;
 
     EXPRESS_PORT?: string;
 
@@ -64,6 +66,14 @@ namespace Api {
     SUBDOMAIN?: string;
     // deployed app domain part like "quite-secure.com"
     DOMAIN?: string;
+
+    // Choose either SES (enterprise) or nodemailer config below
+
+    // '{ accessKeyId: string, secretAccessKey: string }
+    SES_SMTP_CREDENTIALS_JSON?: string;
+
+    // See nodemailer SMTP JSON object https://nodemailer.com/smtp/
+    SMTP_TRANSPORT_JSON?: string;
   };
 
   export class ApiError extends Error {
@@ -315,7 +325,9 @@ namespace Api {
         authenticated: true;
         broadcastOrgSocket?:
           | true
-          | ((action: T) =>
+          | ((
+              action: T
+            ) =>
               | boolean
               | {
                   userIds: string[];

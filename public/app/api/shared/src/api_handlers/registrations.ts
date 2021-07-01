@@ -28,8 +28,7 @@ apiAction<
       verifyTokenRes: false | Api.Db.ObjectTransactionItems | undefined;
 
     if (
-      (payload.hostType == "self-hosted" && env.IS_CLOUD_ENVKEY) ||
-      (payload.hostType == "cloud" && !env.IS_CLOUD_ENVKEY)
+      (payload.hostType == "cloud" && (env.IS_SELF_HOSTED_ENVKEY || !env.IS_CLOUD_ENVKEY))
     ) {
       throw await apiErr(transactionConn, "host type mismatch", 400);
     }

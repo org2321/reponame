@@ -1,6 +1,8 @@
 import { Api } from "@core/types";
 
-export const env = process.env as Api.Env;
+// default env
+export const env = process.env as any as Api.Env;
+
 export const ensureEnv = (...addKeys: (keyof Api.Env)[]) => {
   for (let k of <const>[
     "RUNTIME",
@@ -10,7 +12,6 @@ export const ensureEnv = (...addKeys: (keyof Api.Env)[]) => {
     "DATABASE_HOST",
     "DATABASE_NAME",
     "DATABASE_CREDENTIALS_JSON",
-    "FAILOVER_SIGNING_PUBKEY",
     "EMAILS_PER_SECOND",
     "API_VERSION_NUMBER",
     "INFRA_VERSION_NUMBER",

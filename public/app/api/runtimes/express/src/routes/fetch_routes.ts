@@ -34,9 +34,14 @@ const fetchRoute: express.RequestHandler<
   }
 
   if (query.signedSourceIp) {
+    if (!env.FAILOVER_SIGNING_PUBKEY) {
+      res.status(500).send({
+        message: "Server misconfigured or unsupported for failover",
+      } as any);
+    }
     const verified = nacl.sign.open(
       naclUtil.decodeBase64(query.signedSourceIp),
-      naclUtil.decodeBase64(env.FAILOVER_SIGNING_PUBKEY)
+      naclUtil.decodeBase64(env.FAILOVER_SIGNING_PUBKEY!)
     );
 
     if (!verified) {

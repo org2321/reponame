@@ -10,7 +10,9 @@ import startup from "./startup";
 
 log("EnvKey API Community Edition is starting...");
 
-const injectHandlers = () => {};
+const injectHandlers = () => {
+  require("../../../community/src/api_handlers");
+};
 
 startup(injectHandlers)
   .then(() => {

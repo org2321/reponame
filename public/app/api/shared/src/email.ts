@@ -38,16 +38,29 @@ const { enqueue: enqueueBulkEmail } = newMemoryQueue(
   maxMailRetryCount
 );
 
-let transporter: Mail;
+let transporter: Mail | undefined;
+const asyncVerify = () =>
+  new Promise<void>((resolve, reject) => {
+    transporter?.verify((err) => (err ? reject(err) : resolve()));
+  });
 
-const host = `email-smtp.${process.env.AWS_REGION}.amazonaws.com`;
+const verifySMTP = async () => {
+  try {
+    await asyncVerify();
+    log("SMTP settings were verified successfully.");
+  } catch (err) {
+    logStderr("SMTP settings failed to be verified.", { err });
+  }
+};
+
+const sesSmtpHostInternal = `email-smtp.${process.env.AWS_REGION}.amazonaws.com`;
 let accessKeyId: string;
 let secretAccessKey: string;
 let hashedAccessKey: string;
 
-if (process.env.NODE_ENV === "production") {
+if (env.NODE_ENV === "production" && env.SES_SMTP_CREDENTIALS_JSON) {
   ({ accessKeyId, secretAccessKey } = JSON.parse(
-    process.env.SES_SMTP_CREDENTIALS_JSON!
+    env.SES_SMTP_CREDENTIALS_JSON
   ));
   const region = process.env.AWS_REGION;
   if (!region) {
@@ -55,7 +68,7 @@ if (process.env.NODE_ENV === "production") {
   }
   hashedAccessKey = secretKeyToSmtpPass(secretAccessKey, region);
   transporter = nodemailer.createTransport({
-    host,
+    host: sesSmtpHostInternal,
     port: 587,
 
     // This means to wait for STARTTLS, otherwise Error: "ssl3_get_record:wrong version number"
@@ -72,20 +85,13 @@ if (process.env.NODE_ENV === "production") {
       rejectUnauthorized: false,
     },
   });
+} else if (env.SMTP_TRANSPORT_JSON) {
+  transporter = nodemailer.createTransport(JSON.parse(env.SMTP_TRANSPORT_JSON));
+} else {
+  logStderr("SMTP missing or disabled. EnvKey may not work correctly.");
+}
 
-  const asyncVerify = () =>
-    new Promise<void>((resolve, reject) => {
-      transporter.verify((err) => (err ? reject(err) : resolve()));
-    });
-
-  const verifySMTP = async () => {
-    try {
-      await asyncVerify();
-      log("SMTP settings were verified successfully.");
-    } catch (err) {
-      logStderr("SMTP settings failed to be verified.", { err });
-    }
-  };
+if (transporter) {
   verifySMTP();
 }
 
@@ -110,7 +116,7 @@ export const sendEmail = async (email: CustomEmail) => {
 
   log("Sending email immediately", { to, subject });
   return transporter.sendMail(emailData).catch((err) => {
-    const task = () => transporter.sendMail(emailData);
+    const task = async () => transporter?.sendMail(emailData);
     task.toString = () => `sendEmail(${JSON.stringify(email)})`;
 
     logStderr("Initial sendEmail failed, queuing for later.", { err, task });
@@ -136,7 +142,7 @@ export const sendBulkEmail = async (email: CustomEmail) => {
     return;
   }
 
-  const task = () => transporter.sendMail(emailData);
+  const task = async () => transporter?.sendMail(emailData);
   task.toString = () => `sendBulkEmail(${JSON.stringify(email)})`;
   enqueueBulkEmail(task);
   log("Enqueued bulk email", { to, subject });

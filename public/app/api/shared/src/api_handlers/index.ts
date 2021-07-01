@@ -11,7 +11,6 @@ import "./invites";
 import "./keyable_parents";
 import "./logs";
 import "./orgs";
-import "./rbac";
 import "./registrations";
 import "./sessions";
 import "./crypto";

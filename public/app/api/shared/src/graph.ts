@@ -82,16 +82,29 @@ export const getOrgGraph = async (
       };
     }
 
+    if (env.IS_SELF_HOSTED_ENVKEY) {
+      return {
+        ...userGraph,
+        [org.id]: {
+          ...org,
+          billingId,
+          billingTiers: BILLING_TIERS,
+          selfHostedVersions: {
+            api: env.API_VERSION_NUMBER!,
+            infra: env.INFRA_VERSION_NUMBER!,
+          },
+        },
+        [license.id]: license,
+      };
+    }
+
+    // community
     return {
       ...userGraph,
       [org.id]: {
         ...org,
         billingId,
-        billingTiers: BILLING_TIERS,
-        selfHostedVersions: {
-          api: env.API_VERSION_NUMBER!,
-          infra: env.INFRA_VERSION_NUMBER!,
-        },
+        billingTiers: [],
       },
       [license.id]: license,
     };

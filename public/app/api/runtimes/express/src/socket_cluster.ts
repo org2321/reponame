@@ -3,7 +3,6 @@ import express, { RequestHandler } from "express";
 import { errorFallbackMiddleware } from "./errors";
 import bodyParser from "body-parser";
 import localSocketServer from "./socket";
-import { getOtherActiveHosts } from "./hosts";
 import { Api } from "@core/types";
 import * as R from "ramda";
 import { log } from "@core/lib/utils/logger";
@@ -16,6 +15,12 @@ type ClusterFn = Exclude<keyof Api.SocketServer, "start">;
 type AgentRequestParams = { fn: ClusterFn; args: any[]; auth: string };
 
 let agentPort: number;
+let hostGetter: () => Promise<string[]>;
+
+// we'll use a fargate metadata getter func, but theoertically any function returning a list of hosts would work
+export const registerHostGetter = (hostGetterFunc: () => Promise<string[]>) => {
+  hostGetter = hostGetterFunc;
+};
 
 const start: Api.SocketServer["start"] = (port: number) => {
     agentPort = port;
@@ -87,7 +92,10 @@ const start: Api.SocketServer["start"] = (port: number) => {
   },
   clusterMethod = (fn: ClusterFn, ...args: any[]) => {
     R.apply(localSocketServer[fn], args);
-    getOtherActiveHosts()
+    if (!hostGetter) {
+      return;
+    }
+    hostGetter()
       .then((ips) =>
         ips.forEach((ip) => {
           const url = `http://${ip}:${agentPort}/cluster-agent`,
