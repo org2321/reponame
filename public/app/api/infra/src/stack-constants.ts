@@ -1,8 +1,5 @@
 import { Infra } from "@core/types";
 
-export const API_ZIP_FILE =
-  process.env.ENVKEY_OVERRIDE_API_ZIP_FILE || "api.zip"; // Will be set in CLI or CodeBuild, but not on API.
-
 // our release artifact buckets will always be in that region, at least for now
 export const RELEASE_ASSET_REGION = "us-east-1";
 // the buckets can be overriden for cloud
@@ -19,19 +16,22 @@ export const envkeyReleasesS3Creds: Infra.OptionalAwsCreds = process.env
 
 export const PARAM_API_VERSION_NUMBER = "ApiVersionNumber";
 export const PARAM_INFRA_VERSION_NUMBER = "InfraVersionNumber";
+export const ECR_SELF_HOSTED = "public.ecr.aws/g6r8c0k6/api";
+export const ECR_COMMUNITY = "public.ecr.aws/g6r8c0k6/api-community";
 
-export const githubLatestVersionFiles: Record<Infra.ProjectType, string> = {
-  api: `releases/api/api-version.txt`,
-  cli: `releases/cli/cli-version.txt`,
-  desktop: `releases/desktop/desktop-version.txt`,
-  infra: `releases/infra/infra-version.txt`,
-  failover: `releases/failover/failover-version.txt`,
-  envkeysource: `releases/envkeysource/envkeysource-version.txt`,
-  envkeyfetch: `releases/envkeyfetch/envkeyfetch-version.txt`,
-};
+export const ECR_HOST_AND_REPO =
+  process.env.ECR_HOST_AND_REPO_OVERRIDE ?? ECR_SELF_HOSTED;
 
-export const githubApiMinInfraVersionFile =
-  "public/app/api-version-to-minimum-infra-version.json";
+// export const githubLatestVersionFiles: Record<Infra.ProjectType, string> = {
+//   api: `releases/api/api-version.txt`,
+//   cli: `releases/cli/cli-version.txt`,
+//   desktop: `releases/desktop/desktop-version.txt`,
+//   infra: `releases/infra/infra-version.txt`,
+//   failover: `releases/failover/failover-version.txt`,
+//   envkeysource: `releases/envkeysource/envkeysource-version.txt`,
+//   envkeyfetch: `releases/envkeyfetch/envkeyfetch-version.txt`,
+// };
+
 export const apiToMinInfraMap = <Record<string, string>>(
   require("../../../api-version-to-minimum-infra-version.json")
 );
@@ -44,7 +44,6 @@ export const updaterBuildspec = "updater-inception-buildspec.yml";
 
 // Important: order matters as they will be destroyed in reverse order of below
 export enum CfStack {
-  ENVKEY_ECR_CI = "envkey-ecr-ci",
   ENVKEY_IN_REGION_BASE = "envkey-in-region-base",
   ENVKEY_IN_REGION_FAILOVER = "envkey-in-region-failover",
   ENVKEY_SERVERLESS_DB = "envkey-serverless-db",
@@ -154,10 +153,8 @@ export const codebuildProjectNames = {
     `envkey-install-runner-${deploymentTag}`,
   updater: (deploymentTag: string) =>
     `envkey-api-update-runner-${deploymentTag}`,
-  apiContainer: (deploymentTag: string) =>
-    `envkey-api-container-build-${deploymentTag}`,
-  loadtestContainer: (deploymentTag: string) =>
-    `envkey-loadtest-container-build-${deploymentTag}`,
+  // loadtestContainer: (deploymentTag: string) =>
+  //   `envkey-loadtest-container-build-${deploymentTag}`,
 };
 
 export const getSnsAlertTopicName = (deploymentTag: string) =>
@@ -179,12 +176,6 @@ export const getFailoverBucketName = (deploymentTag: string) =>
 
 export const getSecondaryFailoverBucketName = (deploymentTag: string) =>
   `envkey-secondary-code-${deploymentTag}`;
-
-export const getEcrStackName = (deploymentTag: string) =>
-  CfStack.ENVKEY_ECR_CI + "-" + deploymentTag;
-
-export const getEcrRepoName = (deploymentTag: string) =>
-  `envkey-api-${deploymentTag}`;
 
 export const getCodebuildRoleName = (deploymentTag: string) =>
   `envkey-codebuild-role-${deploymentTag}`;
