@@ -17,7 +17,9 @@ export const envkeyReleasesS3Creds: Infra.OptionalAwsCreds = process.env
 export const PARAM_API_VERSION_NUMBER = "ApiVersionNumber";
 export const PARAM_INFRA_VERSION_NUMBER = "InfraVersionNumber";
 export const ECR_SELF_HOSTED = "public.ecr.aws/g6r8c0k6/api";
+export const ECR_SELF_HOSTED_STAGING = "public.ecr.aws/g6r8c0k6/api-pre-release";
 export const ECR_COMMUNITY = "public.ecr.aws/g6r8c0k6/api-community";
+export const ECR_COMMUNITY_STAGING = "public.ecr.aws/g6r8c0k6/api-community-pre-release";
 
 export const ECR_HOST_AND_REPO =
   process.env.ECR_HOST_AND_REPO_OVERRIDE ?? ECR_SELF_HOSTED;
