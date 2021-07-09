@@ -153,10 +153,6 @@ export const codebuildProjectNames = {
     `envkey-install-runner-${deploymentTag}`,
   updater: (deploymentTag: string) =>
     `envkey-api-update-runner-${deploymentTag}`,
-  apiContainer: (deploymentTag: string) =>
-    `envkey-api-container-build-${deploymentTag}`,
-  loadtestContainer: (deploymentTag: string) =>
-    `envkey-loadtest-container-build-${deploymentTag}`,
 };
 
 export const getSnsAlertTopicName = (deploymentTag: string) =>
