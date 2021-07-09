@@ -332,6 +332,7 @@ export const createInstallerProject = async (params: {
       name: codebuildProjectNames.initialInstall(deploymentTag),
       artifacts: { type: "NO_ARTIFACTS" },
       environment: {
+        privilegedMode: true, // for docker
         computeType: "BUILD_GENERAL1_SMALL",
         image: "aws/codebuild/standard:4.0",
         imagePullCredentialsType: "CODEBUILD",
@@ -392,6 +393,7 @@ export const createUpdaterProject = async (params: {
       name: codebuildProjectNames.updater(deploymentTag),
       artifacts: { type: "NO_ARTIFACTS" },
       environment: {
+        privilegedMode: true, // for docker
         computeType: "BUILD_GENERAL1_SMALL",
         image: "aws/codebuild/standard:4.0",
         imagePullCredentialsType: "CODEBUILD",
