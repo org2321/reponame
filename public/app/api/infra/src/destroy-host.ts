@@ -1,5 +1,6 @@
 import { SharedIniFileCredentials } from "aws-sdk";
 import IAM from "aws-sdk/clients/iam";
+import ECR from "aws-sdk/clients/ecr";
 import CF from "aws-sdk/clients/cloudformation";
 import CodeBuild from "aws-sdk/clients/codebuild";
 import Secrets from "aws-sdk/clients/secretsmanager";
@@ -14,6 +15,7 @@ import {
 } from "./aws-helpers";
 import {
   CfStack,
+  getEcrRepoName,
   getSnsAlertTopicArn,
 } from "./stack-constants";
 import * as R from "ramda";
@@ -51,6 +53,7 @@ export const destroyHost = async (params: {
   const secretsManager = new Secrets({ region: primaryRegion, credentials });
   const sns = new SNS({ region: primaryRegion, credentials });
   const iam = new IAM({ region: primaryRegion, credentials });
+  const ecr = new ECR({ region: primaryRegion, credentials });
 
   let failed = false;
 
@@ -59,6 +62,26 @@ export const destroyHost = async (params: {
   }
 
   const awsAccountId = await getAwsAccountId(profile);
+
+  // delete ecr repo first - CF won't delete ECR repos with --force so it always fails,
+  // leaving the stack around
+  try {
+    const repositoryName = getEcrRepoName(deploymentTag);
+
+    if (dryRun) {
+      console.log("Container registry:\n ", repositoryName);
+    } else {
+      console.log("Deleting container registry:\n ", repositoryName);
+      await ecr.deleteRepository({ repositoryName, force: true }).promise();
+    }
+  } catch (err) {
+    if (err.code === "RepositoryNotFoundException") {
+      console.error("   no container registry to delete.");
+    } else {
+      console.error("  ", err.message);
+      failed = true;
+    }
+  }
 
   // destroy all CloudFormation stacks
   for (const stackBaseName of R.reverse(Object.values(CfStack))) {
