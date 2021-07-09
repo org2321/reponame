@@ -44,7 +44,6 @@ export const updaterBuildspec = "updater-inception-buildspec.yml";
 
 // Important: order matters as they will be destroyed in reverse order of below
 export enum CfStack {
-  ENVKEY_ECR_CI = "envkey-ecr-ci",
   ENVKEY_IN_REGION_BASE = "envkey-in-region-base",
   ENVKEY_IN_REGION_FAILOVER = "envkey-in-region-failover",
   ENVKEY_SERVERLESS_DB = "envkey-serverless-db",
@@ -179,9 +178,6 @@ export const getFailoverBucketName = (deploymentTag: string) =>
 
 export const getSecondaryFailoverBucketName = (deploymentTag: string) =>
   `envkey-secondary-code-${deploymentTag}`;
-
-export const getEcrStackName = (deploymentTag: string) =>
-  CfStack.ENVKEY_ECR_CI + "-" + deploymentTag;
 
 export const getEcrRepoName = (deploymentTag: string) =>
   `envkey-api-${deploymentTag}`;
